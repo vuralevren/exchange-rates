@@ -352,7 +352,7 @@ export function sortArray(a, b) {
 }
 ```
 ## Home Page
-We created a timer and called the stats component to show the user when the data will be updated.
+We have created a timer and called the stats component to show the user when the data will be updated.
 
 Replacing `App.js` with the following code:
 
@@ -410,6 +410,6 @@ export default App;
 ## Conclusion
 Congratulations!✨
 
-You had completed the most critical part of the Authentication flow, which includes private routes, sign-up, sign-in, and sign-out operations.
+We have completed the exchange rate application using `cloud function`, `task` and `realtime`.
 
 If you have any questions about Altogic or want to share what you have built, please post a message in our [community forum](https://community.altogic.com/home) or [discord channel](https://discord.gg/zDTnDPBxRz).
