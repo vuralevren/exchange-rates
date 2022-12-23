@@ -8,7 +8,7 @@ You can access the full source code on our example repository.
 
 Exchange Rates is an application that displays exchange rates instantly. 
 
-In this example, we will create a cloud function to pull the data and scrape the HTML page. We will create a cron job for the scrape process to run every 5 minutes and use the Realtime service to instantly reflect the captured data to the user after saving it to the database.
+In this example, we will create a cloud function to pull the data and scrape the HTML page. We will create a cron job for the scrape process to run every 15 minutes and use the Realtime service to instantly reflect the captured data to the user after saving it to the database.
 
 ## Creating an Altogic App
 First, let's create an altogic app.
@@ -48,7 +48,7 @@ We have unchecked the services we do not use as in the screenshot below.
 ![Client Keys](github/client-keys.png)
 
 ## Creating Model and Service
-We created our model as `exchange_rates` and added the necessary fields.
+We have created our model as `exchange_rates` and added the necessary fields.
 
 ![Models](github/models.png)
 
@@ -56,13 +56,15 @@ Let's create our endpoint as in the screenshot below. We did not check the sessi
 
 ![Create Endpoint](github/create-endpoint.png)
 
-We get our model in Body. After cleaning the database first, we add the array that comes in the body.
+We have gotten our exchange_rates model in Body. After cleaning the database, we first add the array in the body.
+
+>  The `Synchronize Flow` node waits for execution flow until the execution completion of selected nodes. 
 
 ![Update Service](github/update-service.png)
 
 ## Creating Cloud Function and Cron Job
 
-Let's create our cloud function to scrape our data. We need to download Altogic CLI.
+Let's create our cloud function to scrape our data. We need to download Altogic CLI. 
 
 ```bash 
 $ npm install -g altogic-cli 
@@ -221,7 +223,15 @@ module.exports = async function (req, res) {
 };
 ```
 
-After scraping the website and normalizing the data, we save the data to the database with the help of the endpoint we created earlier. We also sent the data to the rates channel in realtime so that the data is instantly reflected to the user.
+After scraping the website and normalizing the data, we saved the data to the database with the help of the endpoint we created earlier. We also sent the data to the rates channel in real-time so that the user instantly reflected the data.
+
+Now, we can deploy our function and connect with the task.
+
+```bash
+$ altogic deploy
+```
+
+![Task](github/task.png)
 
 ## Create a React project
 
@@ -260,7 +270,7 @@ export default altogic;
 > `signInRedirect` is the sign in page URL to redirect the user when user's session becomes invalid. Altogic client library observes the responses of the requests made to your app backend. If it detects a response with an error code of missing or invalid session token, it can redirect the users to this signin url.
 
 ## Stats Component
-Let's create Stats component to show exchange rate information. When the page was loaded, we made a GET request to pull the data from the database. We also subscribed to the rates channel that we created in the cloud function for instantaneous reflection of the data. 
+Let's create `Stats` component to show exchange rate information. When the page was loaded, we made a GET request to pull the data from the database. We also subscribed to the rates channel that we created in the cloud function for instantaneous reflection of the data. 
 
 Replacing `component/stats.js` with the following code:
 
