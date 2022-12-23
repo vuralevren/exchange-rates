@@ -56,7 +56,7 @@ Let's create our endpoint as in the screenshot below. We did not check the sessi
 
 ![Create Endpoint](github/create-endpoint.png)
 
-We have gotten our exchange_rates model in Body. After cleaning the database, we first add the array in the body.
+After cleaning the data from the database, we saved the array from the body to the database.
 
 >  The `Synchronize Flow` node waits for execution flow until the execution completion of selected nodes. 
 
