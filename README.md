@@ -149,7 +149,7 @@ $ npm install axios cheerio
 
 After downloading and installing the libraries, we can start writing the code.
 
-Replacing index.js with the following code:
+Replacing `src/index.js` with the following code:
 
 > Env and Client Key should be changed according to your own application.
 
@@ -323,7 +323,7 @@ export const { db, auth, storage, endpoint, queue, realtime, cache } = altogic;
 ## Stats Component
 Let's create a components/ folder inside the src/ directory to add `stats.js` to show exchange rate information. When the page was loaded, we made a GET request to pull the data from the database. We also subscribed to the rates channel we created in the cloud function for instantaneous data reflection. 
 
-Replacing `components/stats.js` with the following code:
+Replacing `src/components/stats.js` with the following code:
 
 ```js
 // src/components/stats.js
@@ -414,7 +414,7 @@ export function sortArray(a, b) {
 ## Home Page
 We have created a timer and called the stats component to show the user when the data will be updated.
 
-Replacing `App.js` with the following code:
+Replacing `src/App.js` with the following code:
 
 ```js
 // src/App.js
