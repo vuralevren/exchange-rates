@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
-import { endpoint, realtime } from "../config/altogic";
+import { db, realtime } from "../config/altogic";
 import { sortArray } from "../helper/functions";
 
 export default function Stats() {
@@ -12,7 +12,9 @@ export default function Stats() {
   };
 
   useEffect(() => {
-    endpoint.get("/currently").then(({ data }) => setExchangeRates(data));
+    db.model("exchange_rates")
+      .get()
+      .then(({ data }) => setExchangeRates(data));
 
     realtime.join("rates");
 

@@ -48,15 +48,38 @@ We have unchecked the services we do not use as in the screenshot below.
 ![Client Keys](github/client-keys.png)
 
 ## Creating Model and Service
+
+### Model
 We have created our model as `exchange_rates` and added the necessary fields.
 
 ![Models](github/models.png)
 
-Let's create our endpoint as in the screenshot below. We did not check the session required field because there will be no authentication in our application.
+### Endpoint
+
+Let's create our endpoint as in the below.
+
+* <strong>`Endpoint Name:`</strong> "Update exchange rates"
+* <strong>`Method:`</strong> PUT
+* <strong>`Path:`</strong> "/currently"
+* <strong>`Routed Service:`</strong> Add new no-code service as "Update exchange rates service"
+* <strong>`Session Required:`</strong> We did not check the session required field because there will be no authentication in our application.
 
 ![Create Endpoint](github/create-endpoint.png)
 
-After cleaning the data from the database, we saved the array from the body to the database.
+After creating the endpoint, let's click on the `Update exchange rates service` we created.
+
+### Service
+
+The service will save the scraped data to the database.
+
+<strong>Nodes:</strong>
+
+* <strong>`Start (Endpoint Handler):`</strong> We have selected "Single model" in the request body. Then set "exchange_rates" and "Multiple" counts.
+* <strong>`Get Object Value:`</strong> We have entered the picked value as "inputObject.body".
+* <strong>`Delete Multi Objects by Query:`</strong> We have selected "exchange_rates" in the Deleted object model and entered the select query as true.
+* <strong>`Synchronize Flow:`</strong> We have selected "pickedValue" in the Triggered inputs.
+* <strong>`Create Multi Objects:`</strong> We have selected "exchange_rates" in the Created objects model.
+* <strong>`Return Success Response:`</strong> We have connected it with the response.
 
 >  The `Synchronize Flow` node waits for execution flow until the execution completion of selected nodes. 
 
@@ -106,6 +129,12 @@ $ altogic create function
 ✔ Success
 ```
 
+After creating the function let's go inside
+
+```bash
+cd [your-function-name]
+```
+
 The `create function` command will create a folder in your current directory using the name of your function and it will also create an `altogic.json` file to keep the configuration parameters.
 
 You can use your code editor to write the code for your function. By default, the entrypoint of your cloud function is src/index.js which exports the function code.
@@ -122,49 +151,17 @@ After downloading and installing the libraries, we can start writing the code.
 
 Replacing index.js with the following code:
 
+> Env and Client Key should be changed according to your own application.
+
 ```js
 const { createClient } = require("altogic");
 const cheerio = require("cheerio");
 const axios = require("axios");
 
-/*
-  Please see README.md for detailed information about request input parameters
-
-  req variable has the following values, please note that these values can change.
-      ids - endpoint path id parameters object
-      query - reqeust query string parameters
-      headers - request headers object 
-      appParams - App parameters object
-      client - request callers device type and IP information, 
-      session - session of the user making the request
-      appInfo - contextual information about the app and the environment 
-      files - array of file objects
-      body - request body JSON object. This can be a single JSON object or an array of JSON objects.
-
-  res variable has:
-      send(text, status) - Function to return text response. Status code defaults to 200
-      json(object, status) - Function to return JSON response. Status code defaults to 200
-
-  If an exception is thrown, a response with code 500 is returned.
-*/
-
-/*
-  In order to use the Altogic client library you need to create an app and a client key in Altogic. 
-  Additionally, if you will be using the Authentication module of this library, you might need to do 
-  additional configuration in your app settings. 
-  
-  As input to createClient you need to provide your environement base URL and client-key. You can create
-  a new environment or access your app envUrl from the Environments view and create a new clientKey from 
-  App Settings/Client library view in Altogic Designer.
-
-  Please set ENV_URL and CLIENT_KEY values below if you plan to use Altogic Client library in this function.
-*/
 const ENV_URL = "https://exchange.c1-europe.altogic.com";
 const CLIENT_KEY = "b205444ca3...ee1f99";
 
 module.exports = async function (req, res) {
-  // Create a client for interacting with your backend app
-  // You need to provide environment url and client key as input parameters
   let altogic;
 
   if (!ENV_URL || !CLIENT_KEY) {
@@ -176,10 +173,12 @@ module.exports = async function (req, res) {
   const exchangeRates = [];
   let rowIndex = -1;
 
+  // Fetches html page
   const targetUrl = "https://www.isbank.com.tr/en/foreign-exchange-rates";
   const pageResponse = await axios.get(targetUrl);
   const $ = cheerio.load(pageResponse.data);
 
+  // Normalize data
   $("tr")
     .find("td")
     .each((idx, ref) => {
@@ -214,6 +213,7 @@ module.exports = async function (req, res) {
       }
     });
 
+  // Sends database and realtime channel
   altogic.endpoint.put("/currently", exchangeRates);
 
   altogic.realtime.send("rates", "update", exchangeRates);
@@ -231,12 +231,22 @@ Now, we can deploy our function and connect with the task.
 $ altogic deploy
 ```
 
+You can see the function we wrote on the <strong>Services -> Full-code</strong> page.
+
+![Cloud Function](github/function-service.png)
+
+Let's come to the task page and create a new task and connect the function we wrote. We set the time to 15 minutes.
+
 ![Task](github/task.png)
 
 ## Create a React project
 
 ```bash
-npx create-react-app
+npx create-react-app exchange-rates
+
+cd exchange-rates
+
+npm run start
 ```
 ### Integrating with Altogic
 
@@ -270,14 +280,14 @@ export default altogic;
 > `signInRedirect` is the sign in page URL to redirect the user when user's session becomes invalid. Altogic client library observes the responses of the requests made to your app backend. If it detects a response with an error code of missing or invalid session token, it can redirect the users to this signin url.
 
 ## Stats Component
-Let's create `Stats` component to show exchange rate information. When the page was loaded, we made a GET request to pull the data from the database. We also subscribed to the rates channel that we created in the cloud function for instantaneous reflection of the data. 
+Let's create a components/ folder inside the src/ directory to add `stats.js` to show exchange rate information. When the page was loaded, we made a GET request to pull the data from the database. We also subscribed to the rates channel we created in the cloud function for instantaneous data reflection. 
 
 Replacing `component/stats.js` with the following code:
 
 ```js
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
-import { endpoint, realtime } from "../config/altogic";
+import { db, realtime } from "../config/altogic";
 import { sortArray } from "../helper/functions";
 
 export default function Stats() {
@@ -289,12 +299,16 @@ export default function Stats() {
   };
 
   useEffect(() => {
-    endpoint.get("/currently").then(({ data }) => setExchangeRates(data));
+    // Fetches data and subscribes realtime channel
+    db.model("exchange_rates")
+      .get()
+      .then(({ data }) => setExchangeRates(data));
 
     realtime.join("rates");
 
     realtime.on("update", updateRates);
 
+    // Unsubscribes realtime channel
     return () => {
       realtime.leave("rates");
       realtime.off("update");
@@ -338,8 +352,10 @@ export default function Stats() {
 
 ```js
 export function sortArray(a, b) {
-  const nameA = a.name.toUpperCase(); // ignore upper and lowercase
-  const nameB = b.name.toUpperCase(); // ignore upper and lowercase
+  // ignore upper and lowercase
+  const nameA = a.name.toUpperCase(); 
+  const nameB = b.name.toUpperCase();
+
   if (nameA < nameB) {
     return -1;
   }
@@ -368,6 +384,7 @@ function App() {
   );
 
   useEffect(() => {
+    // Calculates minutes left every 1 seconds.
     setInterval(timer, 1000);
 
     return () => {
@@ -412,4 +429,4 @@ Congratulations!✨
 
 We have completed the exchange rate application using `cloud function`, `task` and `realtime`.
 
-If you have any questions about Altogic or want to share what you have built, please post a message in our [community forum](https://community.altogic.com/home) or [discord channel](https://discord.gg/zDTnDPBxRz).
+If you have any questions about Altogic or want to share what you have built, please post a message in our [community forum](https://community.altogic.com/home) or [discord channel](https://discord.gg/ERK2ssumh8).
