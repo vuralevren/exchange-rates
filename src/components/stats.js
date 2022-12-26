@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
-import { db, realtime } from "../config/altogic";
+import { db, realtime } from "../configs/altogic";
 import { sortArray } from "../helper/functions";
 
 export default function Stats() {

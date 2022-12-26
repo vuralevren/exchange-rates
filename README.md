@@ -305,17 +305,15 @@ Let’s create a configs/ folder inside of the src/ directory to add altogic.js 
 Open altogic.js and paste below code block to export the altogic client instance.
 
 ```js
+// src/configs/altogic.js
 import { createClient } from "altogic";
 
-// This `envUrl` and `clientKey` is sample you need to create your own.
-let envUrl = "https://auth.c1-na.altogic.com";
-let clientKey = "e574fee1fb2b443...a8598ca68b7d8";
+const altogic = createClient(
+  "https://exchange.c1-europe.altogic.com",
+  "b205444ca335...e4fee1f99"
+);
 
-const altogic = createClient(envUrl, clientKey, {
-  signInRedirect: "/sign-in",
-});
-
-export default altogic;
+export const { db, auth, storage, endpoint, queue, realtime, cache } = altogic;
 ```
 
 > Replace envUrl and clientKey which is shown in the Home view of Altogic Designer.
@@ -325,12 +323,13 @@ export default altogic;
 ## Stats Component
 Let's create a components/ folder inside the src/ directory to add `stats.js` to show exchange rate information. When the page was loaded, we made a GET request to pull the data from the database. We also subscribed to the rates channel we created in the cloud function for instantaneous data reflection. 
 
-Replacing `component/stats.js` with the following code:
+Replacing `components/stats.js` with the following code:
 
 ```js
+// src/components/stats.js
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
-import { db, realtime } from "../config/altogic";
+import { db, realtime } from "../configs/altogic";
 import { sortArray } from "../helper/functions";
 
 export default function Stats() {
@@ -391,7 +390,9 @@ export default function Stats() {
 }
 ```
 
-> You can create the `sortArray` function to sort the data by name.
+> Let's create helper/ folder inside src/ directory to add `functions.js`. the `sortArray` function to sort the data by name.
+
+> Replacing `src/helper/functions.js` with the following code:
 
 ```js
 export function sortArray(a, b) {
@@ -416,6 +417,7 @@ We have created a timer and called the stats component to show the user when the
 Replacing `App.js` with the following code:
 
 ```js
+// src/App.js
 import { useEffect, useState } from "react";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
