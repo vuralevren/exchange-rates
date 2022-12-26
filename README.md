@@ -248,6 +248,49 @@ cd exchange-rates
 
 npm run start
 ```
+
+### Prerequisites
+
+- [React](https://reactjs.org/)
+- [Tailwind](https://tailwindcss.com/docs/guides/create-react-app)
+- [React Toastify](https://www.npmjs.com/package/react-toastify)
+
+### Installing Tailwind
+
+```bash
+npm install -D tailwindcss postcss autoprefixer
+
+npx tailwindcss init -p
+```
+
+Add the paths to all of your template files in your tailwind.config.js file.
+```js
+/** @type {import('tailwindcss').Config} */
+module.exports = {
+  content: [
+    "./src/**/*.{js,jsx,ts,tsx}",
+  ],
+  theme: {
+    extend: {},
+  },
+  plugins: [],
+}
+```
+
+Add the @tailwind directives for each of Tailwind’s layers to your ./src/index.css file.
+
+```css
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+```
+
+### Installing React Toastify
+
+```bash
+npm install --save react-toastify
+```
+
 ### Integrating with Altogic
 
 ```bash
