@@ -8,7 +8,7 @@ You can access the full source code on our example repository.
 
 Exchange Rates is an application that displays exchange rates instantly. 
 
-In this example, we will create a cloud function to pull the data and scrape the HTML page. We will create a cron job for the scrape process to run every 15 minutes and use the Realtime service to instantly reflect the captured data to the user after saving it to the database.
+In this example, we will create a cloud function to pull the data and scrape the HTML page. We will create a cron job for the scrape process to run every 5 minutes and use the Realtime service to instantly reflect the captured data to the user after saving it to the database.
 
 ## Creating an Altogic App
 First, let's create an altogic app.
@@ -78,7 +78,8 @@ The service will save the scraped data to the database.
 * <strong>`Get Object Value:`</strong> We have entered the picked value as "inputObject.body".
 * <strong>`Delete Multi Objects by Query:`</strong> We have selected "exchange_rates" in the Deleted object model and entered the select query as true.
 * <strong>`Synchronize Flow:`</strong> We have selected "pickedValue" in the Triggered inputs.
-* <strong>`Create Multi Objects:`</strong> We have selected "exchange_rates" in the Created objects model.
+* <strong>`Create Multi Objects:`</strong> We have selected "exchange_rates" in the Created objects model.* 
+* <strong>`Send Message to a Channel:`</strong> We have entered channel name value as "rates" and event name value as "update".
 * <strong>`Return Success Response:`</strong> We have connected it with the response.
 
 >  The `Synchronize Flow` node waits for execution flow until the execution completion of selected nodes. 
@@ -213,11 +214,8 @@ module.exports = async function (req, res) {
       }
     });
 
-  // Sends database and realtime channel
+  // Sends database and realtime channel in service
   altogic.endpoint.put("/currently", exchangeRates);
-
-  altogic.realtime.send("rates", "update", exchangeRates);
-  altogic.realtime.close();
 
   res.json(true);
 };
@@ -235,7 +233,7 @@ You can see the function we wrote on the <strong>Services -> Full-code</strong> 
 
 ![Cloud Function](github/function-service.png)
 
-Let's come to the task page and create a new task and connect the function we wrote. We set the time to 15 minutes.
+Let's come to the task page and create a new task and connect the function we wrote. We set the time to 5 minutes.
 
 ![Task](github/task.png)
 
@@ -423,13 +421,14 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Stats from "./components/stats";
 
+const MINUTES = 5;
+
 function App() {
   const [minutesLeft, setMinutesLeft] = useState(
-    15 - (new Date().getMinutes() % 15)
+    MINUTES - (new Date().getMinutes() % MINUTES)
   );
 
   useEffect(() => {
-    // Calculates minutes left every 1 seconds.
     setInterval(timer, 1000);
 
     return () => {
@@ -438,14 +437,14 @@ function App() {
   }, []);
 
   const timer = () => {
-    setMinutesLeft(15 - (new Date().getMinutes() % 15));
+    setMinutesLeft(MINUTES - (new Date().getMinutes() % MINUTES));
   };
 
   return (
     <div className="px-6 py-6 bg-slate-300 h-full">
       <h1 className="text-center">
-        Rates are updated instantly every 15 minutes. ({minutesLeft} minutes
-        left)
+        Rates are updated instantly every {MINUTES} minutes. ({minutesLeft}{" "}
+        minutes left)
       </h1>
 
       <Stats />
